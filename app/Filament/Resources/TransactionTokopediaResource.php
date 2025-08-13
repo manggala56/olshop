@@ -12,6 +12,7 @@ use Filament\Tables;
 use Filament\Tables\Table;
 use Illuminate\Database\Eloquent\Builder;
 use Illuminate\Database\Eloquent\SoftDeletingScope;
+use Filament\Tables\Actions\Action;
 
 class TransactionTokopediaResource extends Resource
 {
@@ -22,26 +23,35 @@ class TransactionTokopediaResource extends Resource
     protected static ?string $navigationGroup = 'Tiktok';
     protected static ?int $navigationSort = 1;
 
-    public static function form(Form $form): Form
-    {
-        return $form
-            ->schema([
-                Forms\Components\TextInput::make('order_id')->required()->unique(ignoreRecord: true),
-                Forms\Components\Select::make('type')->options(['Order' => 'Order'])->required(),
-                Forms\Components\DateTimePicker::make('order_created_at'),
-                Forms\Components\DateTimePicker::make('order_settled_at'),
-                Forms\Components\TextInput::make('currency'),
-                Forms\Components\TextInput::make('total_settlement_amount')->numeric(),
-                Forms\Components\TextInput::make('total_revenue')->numeric(),
-                Forms\Components\TextInput::make('total_fees')->numeric(),
-                Forms\Components\TextInput::make('shipping_cost')->numeric(),
-                Forms\Components\TextInput::make('order_source'),
-            ]);
-    }
+    // public static function form(Form $form): Form
+    // {
+    //     return $form
+    //         ->schema([
+    //             // Forms\Components\TextInput::make('order_id')->required()->unique(ignoreRecord: true),
+    //             // Forms\Components\Select::make('type')->options(['Order' => 'Order'])->required(),
+    //             // Forms\Components\DateTimePicker::make('order_created_at'),
+    //             // Forms\Components\DateTimePicker::make('order_settled_at'),
+    //             // Forms\Components\TextInput::make('currency'),
+    //             // Forms\Components\TextInput::make('total_settlement_amount')->numeric(),
+    //             // Forms\Components\TextInput::make('total_revenue')->numeric(),
+    //             // Forms\Components\TextInput::make('total_fees')->numeric(),
+    //             // Forms\Components\TextInput::make('shipping_cost')->numeric(),
+    //             // Forms\Components\TextInput::make('order_source'),
+    //         ]);
+    // }
 
     public static function table(Table $table): Table
     {
         return $table
+            ->headerActions([
+
+                Action::make('import')
+                    ->label('Import Excel')
+                    ->url(fn (): string => self::getUrl('import'))
+                    ->color('primary')
+                    ->icon('heroicon-o-document-arrow-up'),
+
+            ])
             ->columns([
                 Tables\Columns\TextColumn::make('order_id')->searchable(),
                 Tables\Columns\TextColumn::make('type'),
@@ -78,8 +88,8 @@ class TransactionTokopediaResource extends Resource
     {
         return [
             'index' => Pages\ListTransactionTokopedias::route('/'),
-            'create' => Pages\CreateTransactionTokopedia::route('/create'),
             'edit' => Pages\EditTransactionTokopedia::route('/{record}/edit'),
+            'import' => Pages\ImportTransactions::route('/import'),
         ];
     }
 }
