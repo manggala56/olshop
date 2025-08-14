@@ -4,7 +4,7 @@ namespace App\Services;
 use Maatwebsite\Excel\Facades\Excel;
 use Illuminate\Support\Facades\Storage;
 use Filament\Notifications\Notification;
-use App\Imports\ImportMasterTokopedia;
+use App\Imports\MasterImportTokopedia;
 use Illuminate\Support\Facades\Log;
 class ImportTokopedia
 {
@@ -22,7 +22,7 @@ class ImportTokopedia
             $fullPath = Storage::disk('local')->path($filePath);
 
             // Impor file Excel menggunakan master importer yang menangani multiple sheets
-            Excel::import(new ImportMasterTokopedia(), $fullPath);
+            Excel::import(new MasterImportTokopedia(), $fullPath);
             Log::info('Import send Success');
             // Hapus file dari storage setelah impor berhasil untuk membersihkan
             Storage::disk('local')->delete($filePath);
