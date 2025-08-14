@@ -13,6 +13,12 @@ use Filament\Tables\Table;
 use Illuminate\Database\Eloquent\Builder;
 use Illuminate\Database\Eloquent\SoftDeletingScope;
 use Filament\Tables\Actions\Action;
+use Filament\Forms\Components\FileUpload;
+use Maatwebsite\Excel\Facades\Excel;
+use Illuminate\Support\Facades\Storage;
+use App\Imports\TransactionImport;
+use Filament\Notifications\Notification;
+use App\Services\ImportTokopedia;
 
 class TransactionTokopediaResource extends Resource
 {
@@ -23,6 +29,7 @@ class TransactionTokopediaResource extends Resource
     protected static ?string $navigationGroup = 'Tiktok';
     protected static ?int $navigationSort = 1;
 
+    // The form method is commented out, so it will not be active.
     // public static function form(Form $form): Form
     // {
     //     return $form
@@ -44,13 +51,29 @@ class TransactionTokopediaResource extends Resource
     {
         return $table
             ->headerActions([
-
                 Action::make('import')
                     ->label('Import Excel')
-                    ->url(fn (): string => self::getUrl('import'))
-                    ->color('primary')
-                    ->icon('heroicon-o-document-arrow-up'),
-
+                    ->icon('heroicon-o-arrow-up-on-square')
+                    ->color('success')
+                    ->action(function (array $data, ImportTokopedia $importer): void {
+                        $filePath = $data['file'];
+                        $importer->importIncomeFile($filePath);
+                    })
+                    ->form([
+                        FileUpload::make('file')
+                            ->label('File Excel')
+                            ->required()
+                            ->acceptedFileTypes([
+                                'application/vnd.ms-excel',
+                                'application/vnd.openxmlformats-officedocument.spreadsheetml.sheet',
+                                'text/csv',
+                            ])
+                            ->disk('local')
+                            ->directory('imports')
+                            ->preserveFilenames(),
+                    ])
+                    ->modalWidth('md')
+                    ->modalHeading('Import Data Produk'),
             ])
             ->columns([
                 Tables\Columns\TextColumn::make('order_id')->searchable(),
@@ -65,6 +88,7 @@ class TransactionTokopediaResource extends Resource
                 Tables\Columns\TextColumn::make('order_source'),
             ])
             ->filters([
+                // Add any filters here if needed
             ])
             ->actions([
                 Tables\Actions\DeleteAction::make(),
@@ -80,7 +104,7 @@ class TransactionTokopediaResource extends Resource
     public static function getRelations(): array
     {
         return [
-            //
+            // Add any relation managers here if needed
         ];
     }
 
@@ -89,7 +113,7 @@ class TransactionTokopediaResource extends Resource
         return [
             'index' => Pages\ListTransactionTokopedias::route('/'),
             'edit' => Pages\EditTransactionTokopedia::route('/{record}/edit'),
-            'import' => Pages\ImportTransactions::route('/import'),
+            // 'import' => Pages\ImportTransactions::route('/import'), // This line is commented out, so it won't be active.
         ];
     }
 }
