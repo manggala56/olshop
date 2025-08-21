@@ -13,7 +13,14 @@ class ListLaporanPenjualans extends ListRecords
     protected function getHeaderActions(): array
     {
         return [
-            Actions\CreateAction::make(),
+            // Actions\CreateAction::make(),
+        ];
+
+    }
+    protected function getHeaderWidgets(): array
+    {
+        return [
+            LaporanPenjualanResource\Widgets\FinancialOverview::class,
         ];
     }
 }

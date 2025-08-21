@@ -103,7 +103,14 @@ class TokopediaFinancialResource extends Resource
                 ->toggleable(isToggledHiddenByDefault: true),
             ])
             ->filters([
-                //
+                Tables\Filters\SelectFilter::make('sku_category')
+                ->label('Filter by SKU')
+                ->options(
+                    fn (): array => finacial_data_tokopedia::query()
+                        ->distinct()
+                        ->pluck('sku_category', 'sku_category')
+                        ->toArray()
+                ),
             ])
             ->actions([
                 // Tables\Actions\EditAction::make(),

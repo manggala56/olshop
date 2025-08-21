@@ -84,6 +84,10 @@ class ShopeeFinancialResource extends Resource
                     ->label('Nama Produk')
                     ->searchable()
                     ->limit(30),
+                    Tables\Columns\TextColumn::make('product_sku')
+                    ->label('SKU')
+                    ->searchable()
+                    ->limit(30),
                 Tables\Columns\TextColumn::make('quantity')
                     ->label('Jumlah')
                     ->numeric()
@@ -133,7 +137,14 @@ class ShopeeFinancialResource extends Resource
                     ->toggleable(isToggledHiddenByDefault: true),
             ])
             ->filters([
-                //
+                Tables\Filters\SelectFilter::make('product_sku')
+                ->label('Filter by SKU')
+                ->options(
+                    fn (): array => financial_data_shopee::query()
+                        ->distinct()
+                        ->pluck('product_sku', 'product_sku')
+                        ->toArray()
+                ),
             ])
             ->actions([
                 // Tables\Actions\EditAction::make(),
