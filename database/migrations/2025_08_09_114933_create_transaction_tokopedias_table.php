@@ -13,7 +13,7 @@ return new class extends Migration
     {
         Schema::create('transaction_tokopedias', function (Blueprint $table) {
             $table->id(); // Tetap sebagai primary key
-            $table->string('order_id')->unique()->nullable();
+            $table->string('order_id')->unique();
             $table->string('type')->nullable();
             $table->string('order_created_at')->nullable(); // Diubah menjadi string
             $table->string('order_settled_at')->nullable(); // Diubah menjadi string

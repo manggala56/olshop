@@ -23,8 +23,8 @@ use App\Services\ImportTokopedia;
 class TransactionTokopediaResource extends Resource
 {
     protected static ?string $model = Transaction_tokopedia::class;
-    protected static ?string $pluralModelLabel = 'Laporan Penjualan Tiktok';
-    protected static ?string $navigationLabel = 'Penjualan';
+    protected static ?string $pluralModelLabel = 'Laporan Pendapatan Tiktok';
+    protected static ?string $navigationLabel = 'Pendapatan';
     protected static ?string $navigationIcon = 'heroicon-o-currency-dollar';
     protected static ?string $navigationGroup = 'Tiktok';
     protected static ?int $navigationSort = 1;
