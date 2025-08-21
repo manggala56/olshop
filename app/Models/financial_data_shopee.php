@@ -29,7 +29,7 @@ class financial_data_shopee extends Model
     {
 
         $basePrice = $this->product_price - $this->seller_discount;
-        $adminFee = $basePrice * 0.10; // Perhitungan Biaya Admin 10%
+        $adminFee = $basePrice * 0.9; // Perhitungan Biaya Admin 10%
 
         return $adminFee;
     }
