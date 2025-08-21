@@ -61,7 +61,7 @@ class FinancialReport extends BaseWidget
 
         $shopeeNetIncome = $shopeeQuery->get()->sum(function ($item) {
             $baseAmount = $item->total_payment;
-            $adminFee = $baseAmount * 0.1; // 10% admin fee
+            $adminFee = $baseAmount * 0.9; // 10% admin fee
             return $baseAmount - $adminFee;
         });
 
