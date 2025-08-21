@@ -169,7 +169,8 @@ class LaporanPenjualanResource extends Resource
     public static function getWidgets(): array
     {
         return [
-            Widgets\FinancialOverview::class,
+            // Widgets\FinancialOverview::class,
+            Widgets\FinancialReport::class
         ];
     }
 }

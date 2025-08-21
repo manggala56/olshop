@@ -2,30 +2,26 @@
 
 namespace App\Filament\Resources\LaporanPenjualanResource\Widgets;
 
-use Filament\Widgets\Widget;
-use App\Models\financial_data_tokopedia;
-use App\Models\financial_data_shopee;
 use Filament\Widgets\StatsOverviewWidget as BaseWidget;
 use Filament\Widgets\StatsOverviewWidget\Stat;
+use App\Models\finacial_data_tokopedia;
+use App\Models\financial_data_shopee;
 use Illuminate\Support\Facades\DB;
 
-class FinancialOverview extends Widget
+class FinancialReport extends BaseWidget
 {
-    protected static string $view = 'filament.resources.laporan-penjualan-resource.widgets.financial-overview';
+    public ?array $filters = [];
+
     protected function getStats(): array
     {
-        $filters = $this->filters;
-
         // Get date range from filters
-        $startDate = $filters['startDate'] ?? null;
-        $endDate = $filters['endDate'] ?? null;
-        $sku = $filters['sku'] ?? null;
+        $startDate = $this->filters['startDate'] ?? null;
+        $endDate = $this->filters['endDate'] ?? null;
+        $sku = $this->filters['sku'] ?? null;
 
-        // Query for Tokopedia data
-        $tokopediaQuery = financial_data_tokopedia::query();
+        // Query for Tokopedia data with filters
+        $tokopediaQuery = finacial_data_tokopedia::query();
         $shopeeQuery = financial_data_shopee::query();
-
-        // Apply date filter
         if ($startDate) {
             $tokopediaQuery->whereDate('created_time', '>=', $startDate);
             $shopeeQuery->whereDate('order_created_at', '>=', $startDate);
@@ -45,14 +41,30 @@ class FinancialOverview extends Widget
         // Calculate total sales quantity
         $totalQuantity = $tokopediaQuery->sum('quantity') + $shopeeQuery->sum('quantity');
 
-        // Calculate total income directly in the database query
-        $tokopediaIncome = $tokopediaQuery->sum(DB::raw('order_amount - order_refund_amount'));
-        $shopeeIncome = $shopeeQuery->sum('total_payment');
+        // Calculate total income
+        $tokopediaIncome = $tokopediaQuery->get()->sum(function ($item) {
+            return $item->order_amount - $item->order_refund_amount;
+        });
+
+        $shopeeIncome = $shopeeQuery->get()->sum(function ($item) {
+            return $item->total_payment;
+        });
+
         $totalIncome = $tokopediaIncome + $shopeeIncome;
 
-        // Calculate net income directly in the database query (after 10% admin fee)
-        $tokopediaNetIncome = $tokopediaQuery->sum(DB::raw('(order_amount - order_refund_amount) * 0.9'));
-        $shopeeNetIncome = $shopeeQuery->sum(DB::raw('total_payment * 0.9'));
+        // Calculate net income
+        $tokopediaNetIncome = $tokopediaQuery->get()->sum(function ($item) {
+            $baseAmount = $item->order_amount - $item->order_refund_amount;
+            $adminFee = $baseAmount * 0.1; // 10% admin fee
+            return $baseAmount - $adminFee;
+        });
+
+        $shopeeNetIncome = $shopeeQuery->get()->sum(function ($item) {
+            $baseAmount = $item->total_payment;
+            $adminFee = $baseAmount * 0.1; // 10% admin fee
+            return $baseAmount - $adminFee;
+        });
+
         $totalNetIncome = $tokopediaNetIncome + $shopeeNetIncome;
 
         return [
@@ -72,10 +84,32 @@ class FinancialOverview extends Widget
                 ->color('success'),
         ];
     }
+    protected function getFormSchema(): array
+    {
+        $tokopediaSkus = DB::table('finacial_data_tokopedias')
+            ->distinct()
+            ->pluck('sku_category', 'sku_category');
 
+        $shopeeSkus = DB::table('finacial_data_shopees')
+            ->distinct()
+            ->pluck('product_sku', 'product_sku');
+
+        $allSkus = $tokopediaSkus->union($shopeeSkus)->toArray();
+
+        return [
+            Forms\Components\Select::make('sku')
+                ->label('Filter by SKU')
+                ->options($allSkus)
+                ->searchable(),
+            Forms\Components\DatePicker::make('startDate')
+                ->label('Dari Tanggal'),
+            Forms\Components\DatePicker::make('endDate')
+                ->label('Sampai Tanggal'),
+        ];
+    }
     protected function getFilters(): array
     {
-        $tokopediaSkus = financial_data_tokopedia::distinct()->pluck('sku_category', 'sku_category');
+        $tokopediaSkus = finacial_data_tokopedia::distinct()->pluck('sku_category', 'sku_category');
         $shopeeSkus = financial_data_shopee::distinct()->pluck('product_sku', 'product_sku');
         $allSkus = $tokopediaSkus->union($shopeeSkus)->toArray();
 

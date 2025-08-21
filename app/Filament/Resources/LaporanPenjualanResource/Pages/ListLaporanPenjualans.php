@@ -20,7 +20,8 @@ class ListLaporanPenjualans extends ListRecords
     protected function getHeaderWidgets(): array
     {
         return [
-            LaporanPenjualanResource\Widgets\FinancialOverview::class,
+            // LaporanPenjualanResource\Widgets\FinancialOverview::class,
+            LaporanPenjualanResource\Widgets\FinancialReport::class
         ];
     }
 }
