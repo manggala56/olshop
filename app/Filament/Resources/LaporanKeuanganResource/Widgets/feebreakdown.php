@@ -27,7 +27,7 @@ class FeeBreakdown extends ChartWidget
         $shipping_fee = $stats->sum('shipping_fee');
         $additional_fees = $stats->sum('additional_fees');
         $insurance_fees = $stats->sum('insurance_fees');
-        $refund_fee = $stats->sum('refund_fee');
+        $refund_fee = $stats->sum('refund_amount');
 
         return [
             'labels' => [
