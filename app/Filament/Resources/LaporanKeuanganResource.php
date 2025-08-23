@@ -57,7 +57,11 @@ class LaporanKeuanganResource extends Resource
             Tables\Columns\TextColumn::make('unit_price')
                 ->label('Harga Unit')
                 ->money('IDR')
-                ->sortable()
+                ->getStateUsing(fn ($record) => $record->unit_price * 1000)
+                ->sortable(query: function (Builder $query, string $direction) {
+                    // Sorting berdasarkan nilai asli
+                    $query->orderBy('unit_price', $direction);
+                })
                 ->toggleable(),
 
             // Bagian Discounts
