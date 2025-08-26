@@ -30,6 +30,7 @@ class finacial_data_tokopedia extends Model
         'order_amount',
         'order_refund_amount',
         'created_time',
+        'store_name'
     ];
     protected $casts = [
         'created_time' => 'datetime',

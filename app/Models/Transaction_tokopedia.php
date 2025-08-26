@@ -66,6 +66,7 @@ class Transaction_tokopedia extends Model
         'actual_weight_g',
         'shopping_center_items',
         'order_source',
+        'store_name'
     ];
 
     protected $casts = [

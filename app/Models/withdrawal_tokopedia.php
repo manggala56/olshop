@@ -17,6 +17,7 @@ class withdrawal_tokopedia extends Model
         'status',
         'success_time_utc',
         'bank_account',
+        'store_name'
     ];
 
     protected $casts = [

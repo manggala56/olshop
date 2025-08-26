@@ -24,6 +24,7 @@ class financial_data_shopee extends Model
         'shipping_province',
         'order_created_at',
         'payment_made_at',
+        'store_name'
     ];
     public function getAdminFeeAttribute()
     {
