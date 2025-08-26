@@ -66,6 +66,7 @@ return new class extends Migration
             $table->string('actual_weight_g')->nullable(); // Diubah menjadi string
             $table->text('shopping_center_items')->nullable(); // Tetap text karena bisa panjang
             $table->string('order_source')->nullable();
+            $table->string('store_name')->nullable();
             $table->timestamps(); // Tetap sebagai timestamps
         });
     }

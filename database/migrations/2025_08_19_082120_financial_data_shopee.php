@@ -29,6 +29,7 @@ return new class extends Migration
             $table->string('shipping_province')->nullable();
             $table->dateTime('order_created_at')->nullable();
             $table->dateTime('payment_made_at')->nullable();
+            $table->string('store_name')->nullable();
             $table->timestamps();
         });
     }

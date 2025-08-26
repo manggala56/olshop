@@ -56,6 +56,7 @@ class TokopediaFinancialResource extends Resource
                             'application/vnd.openxmlformats-officedocument.spreadsheetml.sheet',
                             'text/csv',
                         ])
+                        ->maxSize(10240)
                         ->disk('local')
                         ->directory('imports')
                         ->preserveFilenames(),

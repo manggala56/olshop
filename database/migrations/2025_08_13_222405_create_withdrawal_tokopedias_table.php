@@ -20,6 +20,7 @@ return new class extends Migration
             $table->string('status')->nullable();
             $table->dateTime('success_time_utc')->nullable();
             $table->string('bank_account')->nullable();
+            $table->string('store_name')->nullable();
             $table->timestamps();
         });
     }

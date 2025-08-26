@@ -35,6 +35,7 @@ return new class extends Migration
             $table->bigInteger('order_amount')->nullable();
             $table->bigInteger('order_refund_amount')->nullable();
             $table->timestamp('created_time')->nullable();
+            $table->string('store_name')->nullable();
             $table->timestamps();
         });
     }
