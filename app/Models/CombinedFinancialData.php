@@ -18,6 +18,7 @@ class CombinedFinancialData extends Model
         $tokopediaQuery = DB::table('finacial_data_tokopedias')
             ->select(
                 'id',
+                'store_name',
                 'order_id',
                 'order_status as status',
                 'product_name',
@@ -32,6 +33,7 @@ class CombinedFinancialData extends Model
         $shopeeQuery = DB::table('finacial_data_shopees')
             ->select(
                 'id',
+                'store_name',
                 DB::raw('order_number as order_id'),
                 'order_status as status',
                 'product_name',

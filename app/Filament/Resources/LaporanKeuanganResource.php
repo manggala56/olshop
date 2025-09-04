@@ -6,6 +6,7 @@ use App\Filament\Resources\LaporanKeuanganResource\Pages;
 use App\Filament\Resources\LaporanKeuanganResource\RelationManagers;
 use App\Models\FinancialDataView;
 use App\Models\DetailedFinancialReport;
+use App\Models\laporan_keuangan;
 use Filament\Forms;
 use Filament\Forms\Form;
 use Filament\Resources\Resource;
@@ -16,7 +17,8 @@ use Filament\Tables\Filters\Filter;
 use Filament\Tables\Filters\SelectFilter;
 use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Carbon;
-
+use Filament\Tables\Actions\Action;
+use Filament\Forms\Components\TextInput;
 class LaporanKeuanganResource extends Resource
 {
     protected static ?string $model = DetailedFinancialReport::class;
@@ -172,6 +174,54 @@ class LaporanKeuanganResource extends Resource
                     default => 'gray',
                 }),
         ])
+        ->headerActions([
+            Action::make('Buat Laporan')
+                ->label('Buat Laporan')
+                ->form([
+                    TextInput::make('nama_laporan')
+                        ->label('Nama Laporan')
+                        ->placeholder('Masukkan nama laporan kustom')
+                        ->required(),
+                ])
+                ->color('primary')
+                ->action(function (Table $table, array $data): void {
+                    $query = $table->getLivewire()->getFilteredTableQuery();
+                    $filters = self::formatFilters($table->getLivewire()->tableFilters);
+                    $namaLaporan = $data['nama_laporan'];
+                    $keteranganLaporan = "Laporan Ringkasan berdasarkan: " . $filters;
+                    $summary = $query->select(
+                        DB::raw('SUM(net_income) as total_net_income'),
+                        DB::raw('MIN(order_date) as start_date'),
+                        DB::raw('MAX(order_date) as end_date')
+                    )->first();
+
+                    $totalNetIncome = $summary->total_net_income ?? 0;
+                    $startDate = $summary->start_date ? Carbon::parse($summary->start_date) : null;
+                    $endDate = $summary->end_date ? Carbon::parse($summary->end_date) : null;
+
+                    if ($totalNetIncome == 0) {
+                        \Filament\Notifications\Notification::make()
+                            ->title('Tidak ada data untuk dirangkum')
+                            ->danger()
+                            ->send();
+                        return;
+                    }
+
+                    laporan_keuangan::create([
+                        'nama_laporan' => $namaLaporan,
+                        'tanggal_laporan' => now(),
+                        'jumlah_laporan' => $totalNetIncome,
+                        'keterangan_laporan' => $keteranganLaporan,
+                        'status_laporan' => 'selesai',
+                        'kategori_laporan' => 'keuangan',
+                    ]);
+
+                    \Filament\Notifications\Notification::make()
+                        ->title('Laporan Keuangan berhasil dibuat')
+                        ->success()
+                        ->send();
+                })
+            ])
         ->filters([
             SelectFilter::make('source')
                 ->label('Platform')
@@ -281,5 +331,43 @@ class LaporanKeuanganResource extends Resource
     public static function canDelete($record): bool
     {
         return false;
+    }
+    protected static function formatFilters(array $filters): string
+    {
+        $formattedFilters = collect($filters)
+            ->filter(fn ($value) => is_array($value) ? count(array_filter($value)) > 0 : !empty($value))
+            ->map(function ($value, $key) {
+                switch ($key) {
+                    case 'source':
+                        $options = [
+                            'tokopedia' => 'Tokopedia',
+                            'shopee' => 'Shopee',
+                        ];
+                        return "Platform: " . ($options[$value] ?? $value);
+                    case 'sku':
+                        // Asumsi SKU filter adalah multi-select atau searchable, value-nya adalah array
+                        if (is_array($value)) {
+                            return "SKU: " . implode(', ', array_filter($value));
+                        }
+                        return "SKU: " . $value;
+                    case 'order_date':
+                        $start = $value['start_date'] ?? null;
+                        $end = $value['end_date'] ?? null;
+                        $dates = [];
+                        if ($start) {
+                            $dates[] = 'Dari ' . Carbon::parse($start)->format('d M Y');
+                        }
+                        if ($end) {
+                            $dates[] = 'Sampai ' . Carbon::parse($end)->format('d M Y');
+                        }
+                        return "Tanggal Pesanan: " . implode(' ', $dates);
+                    default:
+                        return "{$key}: {$value}";
+                }
+            })
+            ->values()
+            ->implode(', ');
+
+        return $formattedFilters ?: 'Tidak ada filter yang diterapkan';
     }
 }

@@ -5,6 +5,7 @@ namespace App\Filament\Resources;
 use App\Filament\Resources\ShopeeFinancialResource\Pages;
 use App\Filament\Resources\ShopeeFinancialResource\RelationManagers;
 use App\Models\financial_data_shopee;
+use App\Models\akun;
 use Filament\Forms;
 use Filament\Forms\Form;
 use Filament\Resources\Resource;
@@ -14,6 +15,7 @@ use Illuminate\Database\Eloquent\Builder;
 use Illuminate\Database\Eloquent\SoftDeletingScope;
 use Filament\Tables\Actions\Action;
 use Filament\Forms\Components\FileUpload;
+use Filament\Forms\Components\Select;
 use Maatwebsite\Excel\Facades\Excel;
 use Illuminate\Support\Facades\Storage;
 use Filament\Notifications\Notification;
@@ -48,9 +50,14 @@ class ShopeeFinancialResource extends Resource
                 ->color('success')
                 ->action(function (array $data, ImportFinacialShopee $importer): void {
                     $filePath = $data['file'];
-                    $importer->importIncomeFile($filePath);
+                    $storeName = $data['store_name'];
+                    $importer->importIncomeFile($filePath,$storeName);
                 })
                 ->form([
+                    Select::make('store_name')
+                    ->label('Nama Toko')
+                    ->options(akun::query()->where('category', 'Shopee')->pluck('name_akun', 'name_akun'))
+                    ->required(),
                     FileUpload::make('file')
                         ->label('File Excel')
                         ->required()
@@ -80,6 +87,10 @@ class ShopeeFinancialResource extends Resource
                         'Perlu Dikirim' => 'warning',
                         default => 'gray',
                     }),
+                Tables\Columns\TextColumn::make('store_name')
+                ->label('Nama Toko')
+                ->searchable()
+                ->toggleable(isToggledHiddenByDefault: true),
                 Tables\Columns\TextColumn::make('product_name')
                     ->label('Nama Produk')
                     ->searchable()

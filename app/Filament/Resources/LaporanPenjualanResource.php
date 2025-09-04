@@ -48,9 +48,13 @@ class LaporanPenjualanResource extends Resource
         return $table
             ->columns([
                 Tables\Columns\TextColumn::make('source')
-                    ->label('Sumber')
-                    ->formatStateUsing(fn ($state) => $state === 'tokopedia' ? 'Tokopedia' : 'Shopee')
-                    ->sortable(),
+                ->label('Nama Toko')
+                ->formatStateUsing(function ($state, Model $record) {
+                    $source = $state === 'tokopedia' ? 'Tokopedia' : 'Shopee';
+                    return $source . '/' . $record->store_name;
+                })
+                ->sortable()
+                ->searchable(),
                 Tables\Columns\TextColumn::make('order_id')
                     ->label('ID Pesanan')
                     ->sortable()

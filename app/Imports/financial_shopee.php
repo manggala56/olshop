@@ -18,6 +18,10 @@ class financial_shopee implements ToModel,WithStartRow,SkipsEmptyRows
     *
     * @return \Illuminate\Database\Eloquent\Model|null
     */
+    public function __construct(string $storeName)
+    {
+        $this->storeName = $storeName;
+    }
     public function model(array $row)
     {
         if (empty($row[0])) {
@@ -32,6 +36,7 @@ class financial_shopee implements ToModel,WithStartRow,SkipsEmptyRows
         $totalProductPrice = (float)str_replace('.', '', $row[19]);
 
         return new financial_data_shopee([
+            'store_name'                => $this->storeName,
             'order_number'              => $row[0],
             'order_status'              => $row[1],
             'product_name'              => $row[12],

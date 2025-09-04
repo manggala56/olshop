@@ -9,4 +9,8 @@ use Filament\Resources\Pages\CreateRecord;
 class CreateAkunOlshop extends CreateRecord
 {
     protected static string $resource = AkunOlshopResource::class;
+    protected function getRedirectUrl(): string
+    {
+        return $this->getResource()::getUrl('index');
+    }
 }

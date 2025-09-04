@@ -12,6 +12,12 @@ use Carbon\Carbon;
 
 class financial_tokopedia implements ToModel, WithStartRow,SkipsEmptyRows,WithUpserts
 {
+    protected string $storeName;
+
+    public function __construct(string $storeName)
+    {
+        $this->storeName = $storeName;
+    }
     /**
     * @param array $row
     *
@@ -45,6 +51,7 @@ class financial_tokopedia implements ToModel, WithStartRow,SkipsEmptyRows,WithUp
             'item_insurance' => (int) $row[24],
             'order_amount' => (int) $row[25],
             'order_refund_amount' => (int) $row[26],
+            'store_name'=>$this->storeName,
             'created_time' => $createdTime,
         ]);
     }

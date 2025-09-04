@@ -16,14 +16,14 @@ class ImportFinacialTokopedia
     {
         //
     }
-    public function importIncomeFile(string $filePath): bool
+    public function importIncomeFile(string $filePath , string $storeName): bool
     {
         try {
             // Dapatkan jalur absolut ke file di storage disk 'local'
             $fullPath = Storage::disk('local')->path($filePath);
 
             // Impor file Excel menggunakan master importer yang menangani multiple sheets
-            Excel::import(new financial_tokopedia(), $fullPath);
+            Excel::import(new financial_tokopedia($storeName), $fullPath);
             Log::info('Import send Success');
             // Hapus file dari storage setelah impor berhasil untuk membersihkan
             Storage::disk('local')->delete($filePath);

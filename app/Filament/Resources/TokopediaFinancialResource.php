@@ -5,6 +5,7 @@ namespace App\Filament\Resources;
 use App\Filament\Resources\TokopediaFinancialResource\Pages;
 use App\Filament\Resources\TokopediaFinancialResource\RelationManagers;
 use App\Models\finacial_data_tokopedia;
+use App\Models\akun;
 use Filament\Forms;
 use Filament\Forms\Form;
 use Filament\Resources\Resource;
@@ -14,6 +15,7 @@ use Illuminate\Database\Eloquent\Builder;
 use Illuminate\Database\Eloquent\SoftDeletingScope;
 use Filament\Tables\Actions\Action;
 use Filament\Forms\Components\FileUpload;
+use Filament\Forms\Components\Select;
 use Maatwebsite\Excel\Facades\Excel;
 use Illuminate\Support\Facades\Storage;
 use Filament\Notifications\Notification;
@@ -45,9 +47,14 @@ class TokopediaFinancialResource extends Resource
                 ->color('success')
                 ->action(function (array $data, ImportFinacialTokopedia $importer): void {
                     $filePath = $data['file'];
-                    $importer->importIncomeFile($filePath);
+                    $storeName = $data['store_name'];
+                    $importer->importIncomeFile($filePath,$storeName);
                 })
                 ->form([
+                    Select::make('store_name')
+                    ->label('Nama Toko')
+                    ->options(akun::query()->where('category', 'Tokopedia')->pluck('name_akun', 'name_akun'))
+                    ->required(),
                     FileUpload::make('file')
                         ->label('File Excel')
                         ->required()
