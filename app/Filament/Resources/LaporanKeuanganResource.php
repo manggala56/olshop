@@ -229,6 +229,12 @@ class LaporanKeuanganResource extends Resource
                     'tokopedia' => 'Tokopedia',
                     'shopee' => 'Shopee',
                 ]),
+                SelectFilter::make('store_name')
+                ->label('Nama Toko')
+                ->options(function () {
+                    return \App\Models\Akun::pluck('akun', 'name_akun')->toArray();
+                })
+                ->searchable(),
 
             SelectFilter::make('sku')
                 ->label('SKU')
