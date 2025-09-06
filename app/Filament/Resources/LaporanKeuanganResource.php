@@ -232,7 +232,7 @@ class LaporanKeuanganResource extends Resource
                 SelectFilter::make('store_name')
                 ->label('Nama Toko')
                 ->options(function () {
-                    return \App\Models\Akun::pluck('akun', 'name_akun')->toArray();
+                    return \App\Models\akun::pluck('name_akun', 'name_akun')->toArray();
                 })
                 ->searchable(),
 
