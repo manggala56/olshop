@@ -51,6 +51,12 @@ class LaporanKeuanganResource extends Resource
                 ->sortable()
                 ->toggleable(),
 
+            Tables\Columns\TextColumn::make('store_name')
+                ->label('Nama Toko')
+                ->searchable()
+                ->sortable()
+                ->toggleable(),
+
             Tables\Columns\TextColumn::make('quantity')
                 ->label('Qty')
                 ->numeric()
@@ -186,9 +192,26 @@ class LaporanKeuanganResource extends Resource
                 ->color('primary')
                 ->action(function (Table $table, array $data): void {
                     $query = $table->getLivewire()->getFilteredTableQuery();
-                    $filters = self::formatFilters($table->getLivewire()->tableFilters);
+
+                    // Memperbaiki masalah "Illegal offset type" dengan membersihkan filter yang tidak valid
+                    $livewireFilters = $table->getLivewire()->tableFilters;
+                    $formattedFilters = [];
+                    foreach ($livewireFilters as $key => $value) {
+                        if (!is_string($key)) {
+                            continue;
+                        }
+                        if (is_array($value) && empty(array_filter($value))) {
+                            continue;
+                        }
+                        if (!is_array($value) && empty($value)) {
+                            continue;
+                        }
+                        $formattedFilters[$key] = $value;
+                    }
+
+                    $keteranganLaporan = "Laporan Ringkasan berdasarkan: " . self::formatFilters($formattedFilters);
                     $namaLaporan = $data['nama_laporan'];
-                    $keteranganLaporan = "Laporan Ringkasan berdasarkan: " . $filters;
+
                     $summary = $query->select(
                         DB::raw('SUM(net_income) as total_net_income'),
                         DB::raw('MIN(order_date) as start_date'),
@@ -340,40 +363,70 @@ class LaporanKeuanganResource extends Resource
     }
     protected static function formatFilters(array $filters): string
     {
-        $formattedFilters = collect($filters)
-            ->filter(fn ($value) => is_array($value) ? count(array_filter($value)) > 0 : !empty($value))
-            ->map(function ($value, $key) {
-                switch ($key) {
-                    case 'source':
-                        $options = [
-                            'tokopedia' => 'Tokopedia',
-                            'shopee' => 'Shopee',
-                        ];
-                        return "Platform: " . ($options[$value] ?? $value);
-                    case 'sku':
-                        // Asumsi SKU filter adalah multi-select atau searchable, value-nya adalah array
-                        if (is_array($value)) {
-                            return "SKU: " . implode(', ', array_filter($value));
-                        }
-                        return "SKU: " . $value;
-                    case 'order_date':
-                        $start = $value['start_date'] ?? null;
-                        $end = $value['end_date'] ?? null;
-                        $dates = [];
-                        if ($start) {
-                            $dates[] = 'Dari ' . Carbon::parse($start)->format('d M Y');
-                        }
-                        if ($end) {
-                            $dates[] = 'Sampai ' . Carbon::parse($end)->format('d M Y');
-                        }
-                        return "Tanggal Pesanan: " . implode(' ', $dates);
-                    default:
-                        return "{$key}: {$value}";
-                }
-            })
-            ->values()
-            ->implode(', ');
+        $formattedParts = [];
 
-        return $formattedFilters ?: 'Tidak ada filter yang diterapkan';
+        foreach ($filters as $key => $value) {
+            $formatted = null;
+            switch ($key) {
+                case 'source':
+                    $options = [
+                        'tokopedia' => 'Tokopedia',
+                        'shopee' => 'Shopee',
+                    ];
+                    if (is_string($value) && isset($options[$value])) {
+                        $formatted = "Platform: " . $options[$value];
+                    }
+                    break;
+                case 'store_name':
+                    if (!empty($value)) {
+                        // Handle both string and array values
+                        if (is_array($value)) {
+                            $filteredStores = array_filter($value);
+                            if (!empty($filteredStores)) {
+                                $formatted = "Nama Toko: " . implode(', ', $filteredStores);
+                            }
+                        } else {
+                            $formatted = "Nama Toko: " . $value;
+                        }
+                    }
+                    break;
+                case 'sku':
+                    // Check if the value is an array and flatten it to a string
+                    if (is_array($value)) {
+                        $filteredSkus = array_filter($value);
+                        if (!empty($filteredSkus)) {
+                            $formatted = "SKU: " . implode(', ', $filteredSkus);
+                        }
+                    } elseif (!empty($value)) {
+                        $formatted = "SKU: " . $value;
+                    }
+                    break;
+                case 'order_date':
+                    $start = $value['start_date'] ?? null;
+                    $end = $value['end_date'] ?? null;
+                    $dates = [];
+                    if ($start) {
+                        $dates[] = 'Dari ' . Carbon::parse($start)->format('d M Y');
+                    }
+                    if ($end) {
+                        $dates[] = 'Sampai ' . Carbon::parse($end)->format('d M Y');
+                    }
+                    if (!empty($dates)) {
+                        $formatted = "Tanggal Pesanan: " . implode(' ', $dates);
+                    }
+                    break;
+                default:
+                    if (!empty($value)) {
+                        $formatted = "{$key}: {$value}";
+                    }
+                    break;
+            }
+
+            if ($formatted !== null) {
+                $formattedParts[] = $formatted;
+            }
+        }
+
+        return empty($formattedParts) ? 'Tidak ada filter yang diterapkan' : implode(', ', $formattedParts);
     }
 }
